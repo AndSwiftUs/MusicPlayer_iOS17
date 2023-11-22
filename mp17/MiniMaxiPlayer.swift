@@ -8,32 +8,44 @@
 import SwiftUI
 
 struct MiniMaxiPlayer: View {
+    @Environment(\.safeAreaInsets) private var safeAreaInsets
     let song: Song?
-    let ns: Namespace.ID
-    @Binding var isExpanded: Bool
+    let playerOffset: CGFloat
+        
+    @State private var dragOffset = CGSize.zero
+    @State private var isExpanded: Bool = false
     
-    let width = UIScreen.main.bounds.size.width
-    
+    var closeLine: some View {
+        RoundedRectangle(cornerRadius: 25.0)
+            .fill()
+            .frame(width: 56, height: 6)
+    }
+
     var songCover: some View {
-        ZStack {
-            if let song {
-                song.songImage
-                    .resizable()
-                    .scaledToFit()
-            } else {
-                RoundedRectangle(cornerRadius:
-                    isExpanded ? 15 : 4)
-                    .fill(.gray)
-                Image(systemName: "music.note")
-                    .resizable()
-                    .scaledToFit()
-                    .foregroundColor(.white)
-                    .padding(isExpanded ? 48 : 8)
+        Group {
+            // для размера и расположения songImage в расширеном плеере
+            let width = UIScreen.main.bounds.size.width
+            
+            ZStack {
+                if let song {
+                    song.songImage
+                        .resizable()
+                        .scaledToFit()
+                } else {
+                    RoundedRectangle(cornerRadius:
+                        isExpanded ? 15 : 4)
+                        .fill(.gray)
+                    Image(systemName: "music.note")
+                        .resizable()
+                        .scaledToFit()
+                        .foregroundColor(.white)
+                        .padding(isExpanded ? 48 : 8)
+                }
             }
+            .frame(width: isExpanded ? width / 1.3 : 40,
+                   height: isExpanded ? width / 1.3 : 40)
+            .shadow(radius: isExpanded ? 10 : 0)
         }
-        .frame(width: isExpanded ? width / 1.3 : 40,
-               height: isExpanded ? width / 1.3 : 40)
-        .shadow(radius: isExpanded ? 10 : 0)
     }
     
     var songTitle: some View {
@@ -47,6 +59,7 @@ struct MiniMaxiPlayer: View {
                 Button {} label: {
                     Image(systemName: "ellipsis.circle.fill")
                         .symbolRenderingMode(.multicolor)
+                        .foregroundStyle(Color.fadeGray, .white)
                 }
             }
         }
@@ -110,7 +123,7 @@ struct MiniMaxiPlayer: View {
             
             Spacer()
             
-            Button { isExpanded.toggle() } label: {
+            Button {} label: {
                 Image(systemName: "play.fill")
             }
             .font(.system(size: isExpanded ? 72 : 24))
@@ -132,11 +145,8 @@ struct MiniMaxiPlayer: View {
         
         layout {
             if isExpanded {
-                Spacer()
-                
-                RoundedRectangle(cornerRadius: 25.0)
-                    .fill(Color.white)
-                    .frame(width: 56, height: 6)
+                closeLine
+                    .padding(safeAreaInsets.top)
                 
                 Spacer()
             }
@@ -169,14 +179,30 @@ struct MiniMaxiPlayer: View {
         }
         .padding(isExpanded ? 16 : 8)
         .frame(maxWidth: .infinity,
-               maxHeight: isExpanded ? .infinity : 54)
+               maxHeight: isExpanded ? .infinity : nil) // 56
         .background(isExpanded ? Color.gray : Color.white)
         .foregroundColor(isExpanded ? Color.lightGray : Color.gray)
         .clipShape(RoundedRectangle(cornerRadius: isExpanded ? 0 : 12))
+        .padding(.horizontal, isExpanded ? 0 : 4)
         .shadow(radius: isExpanded ? 0 : 12)
+
+        .animation(.interpolatingSpring(mass: 1.5, stiffness: 100, damping: 20), value: isExpanded)
         
-        .onTapGesture { isExpanded.toggle()
-        }
+        .offset(y: isExpanded ? dragOffset.height : -playerOffset)
+        .onTapGesture { if !isExpanded { isExpanded.toggle() } }
+        .gesture(DragGesture()
+            .onChanged { gesture in
+                dragOffset = gesture.translation
+            }
+            .onEnded { _ in
+                if abs(dragOffset.height) > 120 {
+                    isExpanded.toggle()
+                    dragOffset = .zero
+                } else {
+                    dragOffset = .zero
+                }
+            }
+        )
     }
 }
 

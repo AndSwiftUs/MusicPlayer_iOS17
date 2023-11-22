@@ -9,6 +9,6 @@ import SwiftUI
 
 struct Song {
     let songTitle: String
-    let songImage: Image
+    let songImage: Image // String 
     let songLenght: Double
 }
