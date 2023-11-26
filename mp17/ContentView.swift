@@ -7,6 +7,42 @@
 
 import SwiftUI
 
+struct ContentView: View {
+//    @State private var song: Song? = nil
+    @State private var song: Song? = Song(songTitle: "Nevermind",
+                                          songAuthor: "Nirvana",
+                                          songImage: Image(.nirvanaCover),
+                                          songLenght: 342,
+                                          isDolbyAtmos: true)
+
+    var body: some View {
+        GeometryReader { geo in
+            let screenSize = geo.size
+            let screenSafeArea = geo.safeAreaInsets
+
+            ZStack(alignment: Alignment(horizontal: .center, vertical: .bottom)) {
+                TabView {
+                    TestScrollView()
+                        .tabItem { Label("Tab", systemImage: "star.fill") }
+//                        .toolbarBackground(.hidden, for: .tabBar)
+
+                        .safeAreaInset(edge: .bottom) {
+                            Rectangle().fill(.bar)
+                                .frame(height: 50)
+                        }
+                }
+
+                MiniMaxiPlayer(song: song,
+                               playerOffset: UITabBarController().height,
+                               screenSize: screenSize,
+                               screenSafeArea: screenSafeArea)
+                    .ignoresSafeArea(.container, edges: .all)
+            }
+//            .ignoresSafeArea()
+        }
+    }
+}
+
 struct TestScrollView: View {
     var body: some View {
         ScrollView {
@@ -26,32 +62,6 @@ struct TestScrollView: View {
         }
         .bold()
         .font(.system(size: 92))
-    }
-}
-
-struct ContentView: View {
-    @State private var song: Song? = nil
-    @Environment(\.safeAreaInsets) private var safeAreaInsets
-
-    var body: some View {
-        ZStack(alignment: Alignment(horizontal: .center, vertical: .bottom)) {
-            TabView {
-                TestScrollView()
-
-                    .tabItem { Label("Tab", systemImage: "star.fill") }
-
-                    .safeAreaInset(edge: .bottom) {
-                        Rectangle()
-                            .fill(Material.bar)
-                            .cornerRadius(25, corners: [.topLeft, .topRight])
-                            .frame(height: 56) // размер мини-плеера и чуть ниже
-                    }
-            }
-
-            MiniMaxiPlayer(song: song,
-                           playerOffset: UITabBarController().height + safeAreaInsets.bottom + 8)
-        }
-        .ignoresSafeArea()
     }
 }
 

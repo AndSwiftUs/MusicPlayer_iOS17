@@ -9,6 +9,8 @@ import SwiftUI
 
 struct Song {
     let songTitle: String
-    let songImage: Image // String 
+    let songAuthor: String
+    let songImage: Image // String
     let songLenght: Double
+    let isDolbyAtmos: Bool
 }
