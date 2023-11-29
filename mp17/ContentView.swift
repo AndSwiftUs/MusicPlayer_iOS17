@@ -10,7 +10,7 @@ import SwiftUI
 struct ContentView: View {
     let miniPlayerHeight: CGFloat = 56.0
 
-//    @State private var song: Song? = nil
+    @State private var volume: Double = 0.3
     @State private var song: Song? = Song(songTitle: "Nevermind",
                                           songAuthor: "Nirvana",
                                           songImage: Image(.nirvanaCover),
@@ -38,21 +38,22 @@ struct ContentView: View {
                         Rectangle()
                             .fill(.ultraThinMaterial)
                             .frame(height: bottomOffset + miniPlayerHeight)
-                            .cornerRadius(25, corners: [.topLeft, .topRight])
+                            .cornerRadius(15,
+                                          corners: [.topLeft, .topRight])
                     }
                     .tabItem {
-                        Button {} label: {
-                            Label("Tab", systemImage: "star.fill")
-                        }
+                        Label("Tab", systemImage: "star.fill")
                     }
                     .toolbarBackground(.hidden, for: .tabBar)
                     .ignoresSafeArea()
                 }
 
-                MiniMaxiPlayer(song: song,
+                MiniMaxiPlayer(song: $song,
+                               volume: $volume,
                                playerOffset: bottomOffset + 8,
                                screenSize: screenSize,
                                screenSafeArea: screenSafeArea)
+
                     .ignoresSafeArea(.container, edges: .all)
             }
             .ignoresSafeArea()
@@ -68,10 +69,10 @@ struct TestScrollView: View {
                 Text("line 2")
             }
             .font(.title)
-            .coordinateSpace(name: "tabbar")
 
             Text("Red digital cinema komodo 6k")
                 .textCase(.uppercase)
+
             HStack {
                 Text("Digital Cinema Camera")
                 Spacer()

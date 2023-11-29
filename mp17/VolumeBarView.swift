@@ -14,10 +14,8 @@ struct VolumeBarView: View {
     let barHeightTouched: CGFloat = 14.0
 
     @State private var startProgress: Double = 0.0
-
     @State private var isPressed: Bool = false
     @GestureState private var isDragging: Bool = false
-
     @State private var scaleLeft: CGFloat = 1.0
     @State private var scaleRight: CGFloat = 1.0
 
@@ -42,7 +40,7 @@ struct VolumeBarView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .gesture(
                     DragGesture(minimumDistance: 0, coordinateSpace: .global)
-                        .updating($isDragging) { value, state, transaction in
+                        .updating($isDragging) { _, state, _ in
                             state = true
                         }
                         .onChanged { gestureValue in

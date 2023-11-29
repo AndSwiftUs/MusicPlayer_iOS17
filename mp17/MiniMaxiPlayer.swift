@@ -8,13 +8,16 @@
 import SwiftUI
 
 struct MiniMaxiPlayer: View {
-    let song: Song?
+    @Environment(\.colorScheme) var colorScheme
+    let animationDuration: TimeInterval = 1.0
+    
+    @Binding var song: Song?
+    @Binding var volume: Double
+    
     let playerOffset: CGFloat
     let screenSize: CGSize
     let screenSafeArea: EdgeInsets
-    
-    @State private var volume: Double = 0
-        
+            
     @State private var dragOffset = CGSize.zero
     @State private var isExpanded: Bool = false
     
@@ -68,8 +71,10 @@ struct MiniMaxiPlayer: View {
             
             if isExpanded {
                 Spacer()
-                
-                Button {} label: {
+                Menu {
+                    Button("Song = nil") { song = nil }
+                    Button("Close player") { isExpanded = false }
+                } label: {
                     Image(systemName: "ellipsis.circle.fill")
                         .symbolRenderingMode(.multicolor)
                         .foregroundStyle(Color.fadeGray, .white)
@@ -169,7 +174,7 @@ struct MiniMaxiPlayer: View {
             }
                         
             playButtons
-                .animation(.spring(response: 1.5, dampingFraction: 0.4),
+                .animation(.spring(response: 1.5, dampingFraction: 0.8),
                            value: isExpanded)
                 
             if isExpanded {
@@ -186,22 +191,31 @@ struct MiniMaxiPlayer: View {
         }
         .padding(.vertical, isExpanded ? 0 : 8)
         .padding(.horizontal, isExpanded ? 24 : 8)
-        .frame(maxWidth: .infinity,
-               maxHeight: isExpanded ? .infinity : nil) // 56
-        .background(isExpanded ? Color.gray : Color.white)
-        .foregroundColor(isExpanded ? Color.lightGray : Color.gray)
+//        .frame(maxWidth: .infinity, maxHeight: isExpanded ? .infinity : 56) // nil
+        .background(isExpanded
+            ? Color.gray
+            : colorScheme == .light ? .white : .black)
+        
+        // закругление углов расширенного экрана для разных девайсов
+        .cornerRadius(isExpanded && (screenSafeArea.top != 0)
+            ? screenSafeArea.top - 20 : 0,
+            corners: [.topLeft, .topRight])
+        
+        .foregroundColor(isExpanded ? .lightGray : .gray)
         .clipShape(RoundedRectangle(cornerRadius: isExpanded ? 0 : 12))
-        .padding(.horizontal, isExpanded ? 0 : 4)
+        .padding(.horizontal, isExpanded ? 0 : 8)
         .shadow(radius: isExpanded ? 0 : 12)
 
-        .animation(.interpolatingSpring(mass: 1.5, stiffness: 100, damping: 20),
-                   value: isExpanded)
+//        .animation(.interpolatingSpring(mass: 1.5, stiffness: 100, damping: 20), value: isExpanded)
+        .animation(.spring(duration: animationDuration), value: isExpanded)
+//        .animation(.spring(response: 1.5, dampingFraction: 0.4), value: isExpanded)
         
         .offset(y: isExpanded ? dragOffset.height : -playerOffset)
         .onTapGesture { if !isExpanded { isExpanded.toggle() } }
         .gesture(DragGesture(minimumDistance: 10)
             .onChanged { dragGesture in
                 if dragGesture.translation.height > 0 {
+                    // драг для свёртывания только вниз!
                     dragOffset = dragGesture.translation
                 }
             }
