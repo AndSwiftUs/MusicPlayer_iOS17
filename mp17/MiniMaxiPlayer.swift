@@ -16,7 +16,7 @@ struct MiniMaxiPlayer: View {
     @State private var volume: Double = 0
         
     @State private var dragOffset = CGSize.zero
-    @State private var isExpanded: Bool = !false
+    @State private var isExpanded: Bool = false
     
     var closeLine: some View {
         RoundedRectangle(cornerRadius: 3)
@@ -200,11 +200,13 @@ struct MiniMaxiPlayer: View {
         .offset(y: isExpanded ? dragOffset.height : -playerOffset)
         .onTapGesture { if !isExpanded { isExpanded.toggle() } }
         .gesture(DragGesture(minimumDistance: 10)
-            .onChanged { gesture in
-                dragOffset = gesture.translation
+            .onChanged { dragGesture in
+                if dragGesture.translation.height > 0 {
+                    dragOffset = dragGesture.translation
+                }
             }
             .onEnded { _ in
-                if abs(dragOffset.height) > 120 {
+                if dragOffset.height > 100 {
                     isExpanded.toggle()
                     dragOffset = .zero
                 } else {

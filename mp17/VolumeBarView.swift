@@ -11,113 +11,86 @@ struct VolumeBarView: View {
     @Binding var volume: Double
 
     let barHeight: CGFloat = 8.0
-    let barHeightDragg: CGFloat = 12.0
+    let barHeightTouched: CGFloat = 14.0
 
-    @State private var progress: Double = 0.0
-    @State private var tempProgress: Double = 0.0
+    @State private var startProgress: Double = 0.0
 
-    // при нажатии/перетаскивании
-    @State private var isDragging = false
-    @State private var isPressed = false
+    @State private var isPressed: Bool = false
+    @GestureState private var isDragging: Bool = false
 
-    // если затянули за левый край
-    @State private var isLeft: CGFloat = .zero
-    // если затянули за правый край
-    @State private var isRight: CGFloat = .zero
+    @State private var scaleLeft: CGFloat = 1.0
+    @State private var scaleRight: CGFloat = 1.0
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                Image(systemName: "volume.fill")
-                    .padding(.trailing)
-                    .symbolEffect(.bounce, value: isLeft == 0.0)
+        HStack(spacing: 0) {
+            Image(systemName: "volume.fill")
+                .padding(.trailing)
+                .symbolEffect(.bounce, value: scaleLeft > 1.01)
 
-                GeometryReader { geo in
-                    let barWidth = geo.size.width
+            GeometryReader { geo in
+                let barWidth = geo.size.width
 
-                    RoundedRectangle(cornerRadius: isPressed ? barHeight : barHeight / 2)
+                ZStack(alignment: .leading) {
+                    Rectangle()
                         .foregroundStyle(.ultraThinMaterial)
-                        .frame(height: isPressed ? barHeightDragg : barHeight)
-                        .overlay(alignment: .leading) {
-                            RoundedRectangle(
-                                cornerRadius: isPressed ? barHeight : barHeight / 2
-                            )
-                            .fill(.white)
-                            .frame(width: tempProgress * barWidth, height: isPressed ? barHeightDragg : barHeight)
-                        }
-                        .gesture(
-                            DragGesture(minimumDistance: 0, coordinateSpace: .global)
-                                .onChanged { gestureValue in
-                                    isPressed = true
-                                    tempProgress = volume
+                        .frame(height: isPressed ? barHeightTouched : barHeight)
 
-                                    if abs(gestureValue.translation.width) > 0.01 {
-                                        isDragging = true
-
-                                        let activeWidth = gestureValue.startLocation.x - gestureValue.location.x
-
-                                        progress = activeWidth / barWidth
-
-                                        switch tempProgress - progress {
-                                            case ...0:
-                                                withAnimation {
-                                                    isLeft = max(progress, -0.05)
-                                                }
-                                                tempProgress = 0
-                                            case 1...:
-                                                withAnimation {
-                                                    isRight = -min(progress, 1.05)
-                                                }
-                                                tempProgress = 1
-                                            default:
-                                                isLeft = 0.0
-                                                isRight = 0.0
-                                                tempProgress -= progress
-                                        }
-                                    }
-                                }
-                                .onEnded { _ in
-                                    volume = tempProgress
-                                    progress = 0
-                                    isDragging = false
-                                    isPressed = false
-                                    isLeft = 0.0
-                                    isRight = 0.0
-                                }
-                        )
+                    Rectangle()
+                        .fill(.white)
+                        .frame(width: volume * barWidth, height: isPressed ? barHeightTouched : barHeight)
                 }
-                .frame(height: isDragging || isPressed ? barHeight * 2 : barHeight)
-                .animation(.default, value: isDragging)
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .gesture(
+                    DragGesture(minimumDistance: 0, coordinateSpace: .global)
+                        .updating($isDragging) { value, state, transaction in
+                            state = true
+                        }
+                        .onChanged { gestureValue in
+                            if !isPressed {
+                                startProgress = volume
+                            }
 
-                Image(systemName: "volume.3.fill")
-                    .padding(.leading)
-                    .symbolEffect(.bounce, value: isRight > 0.0)
+                            isPressed = true
+
+                            let tempProgress = startProgress + (gestureValue.translation.width / barWidth)
+
+                            volume = min(max(0, tempProgress), 1)
+
+                            switch tempProgress {
+                                case ...0:
+                                    scaleLeft = sqrt(sqrt(sqrt(1 - tempProgress)))
+                                case 1...:
+                                    scaleRight = sqrt(sqrt(sqrt(tempProgress)))
+                                default:
+                                    scaleLeft = 1
+                                    scaleRight = 1
+                            }
+                        }
+                        .onEnded { _ in
+                            isPressed = false
+                            withAnimation {
+                                startProgress = 0
+                                scaleLeft = 1
+                                scaleRight = 1
+                            }
+                        }
+                )
             }
+            .frame(height: isPressed ? barHeight * 2 : barHeight)
 
-            // небольшое расширение по Х при нажатии
-            .scaleEffect(x: isPressed ? 1.05 : 1)
-
-            // расширение влево при заезде за габариты
-            .scaleEffect(x: isLeft != 0
-                ? 1.02
-                : 1,
-                anchor: .trailing)
-            // вправо
-            .scaleEffect(x: isRight != 0
-                ? 1.02
-                : 1,
-                anchor: .leading)
-
-            .foregroundStyle(isPressed ? .white : .fadeGray)
-            .animation(.default, value: isPressed)
-
-            VStack(spacing: 0) {
-                Text("Progress: \(progress) - Volume: \(volume)")
-                Text("TempProgress\(tempProgress)")
-                Text("Left: \(isLeft) - Right: \(isRight)")
-                    .foregroundStyle(isPressed ? .white : .black)
-            }
+            Image(systemName: "volume.3.fill")
+                .padding(.leading)
+                .symbolEffect(.bounce, value: scaleRight > 1.01)
         }
+        // небольшое расширение по Х при нажатии
+        .scaleEffect(x: isPressed ? 1.02 : 1)
+
+        // расширение влево/вправо при заезде за габариты
+        .scaleEffect(x: scaleLeft, anchor: .trailing)
+        .scaleEffect(x: scaleRight, anchor: .leading)
+
+        .foregroundStyle(isPressed ? .white : .fadeGray)
+        .animation(.default, value: isPressed)
     }
 }
 

@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    let miniPlayerHeight: CGFloat = 56.0
+
 //    @State private var song: Song? = nil
     @State private var song: Song? = Song(songTitle: "Nevermind",
                                           songAuthor: "Nirvana",
@@ -19,26 +21,41 @@ struct ContentView: View {
         GeometryReader { geo in
             let screenSize = geo.size
             let screenSafeArea = geo.safeAreaInsets
+            let bottomOffset = UITabBarController().height + screenSafeArea.bottom
 
             ZStack(alignment: Alignment(horizontal: .center, vertical: .bottom)) {
                 TabView {
-                    TestScrollView()
-                        .tabItem { Label("Tab", systemImage: "star.fill") }
-//                        .toolbarBackground(.hidden, for: .tabBar)
+                    ZStack(alignment: Alignment(horizontal: .center, vertical: .bottom)) {
+                        TestScrollView()
+                            .background(.ultraThinMaterial)
 
-                        .safeAreaInset(edge: .bottom) {
-                            Rectangle().fill(.bar)
-                                .frame(height: 50)
+                            .safeAreaInset(edge: .bottom) {
+                                Rectangle()
+                                    .fill(.clear)
+                                    .frame(height: bottomOffset + miniPlayerHeight)
+                            }
+
+                        Rectangle()
+                            .fill(.ultraThinMaterial)
+                            .frame(height: bottomOffset + miniPlayerHeight)
+                            .cornerRadius(25, corners: [.topLeft, .topRight])
+                    }
+                    .tabItem {
+                        Button {} label: {
+                            Label("Tab", systemImage: "star.fill")
                         }
+                    }
+                    .toolbarBackground(.hidden, for: .tabBar)
+                    .ignoresSafeArea()
                 }
 
                 MiniMaxiPlayer(song: song,
-                               playerOffset: UITabBarController().height,
+                               playerOffset: bottomOffset + 8,
                                screenSize: screenSize,
                                screenSafeArea: screenSafeArea)
                     .ignoresSafeArea(.container, edges: .all)
             }
-//            .ignoresSafeArea()
+            .ignoresSafeArea()
         }
     }
 }
