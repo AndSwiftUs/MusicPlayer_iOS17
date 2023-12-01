@@ -48,8 +48,8 @@ struct MiniMaxiPlayer: View {
         }
         .frame(width: isExpanded ? screenSize.width / 1.5 : 40,
                height: isExpanded ? screenSize.width / 1.5 : 40)
-        .shadow(radius: isExpanded ? 10 : 0)
         .shine(shine, duration: 0.8)
+        .shadow(radius: isExpanded ? 10 : 0)
     }
     
     var songTitle: some View {
