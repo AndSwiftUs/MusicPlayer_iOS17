@@ -21,6 +21,8 @@ struct MiniMaxiPlayer: View {
     @State private var dragOffset = CGSize.zero
     @State private var isExpanded: Bool = false
     
+    @State private var shine: Bool = false
+    
     var closeLine: some View {
         RoundedRectangle(cornerRadius: 3)
             .fill()
@@ -47,6 +49,7 @@ struct MiniMaxiPlayer: View {
         .frame(width: isExpanded ? screenSize.width / 1.5 : 40,
                height: isExpanded ? screenSize.width / 1.5 : 40)
         .shadow(radius: isExpanded ? 10 : 0)
+        .shine(shine, duration: 0.8)
     }
     
     var songTitle: some View {
@@ -117,7 +120,9 @@ struct MiniMaxiPlayer: View {
                 Spacer()
             }
             
-            Button {} label: {
+            Button {
+                shine.toggle()
+            } label: {
                 Image(systemName: "play.fill")
             }
             .font(isExpanded ? .largeTitle : .title2)

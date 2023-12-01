@@ -14,3 +14,11 @@ struct Song {
     let songLenght: Double
     let isDolbyAtmos: Bool
 }
+
+struct MockData {
+    static let NirvanaNevermind: Song = .init(songTitle: "Nevermind",
+                                              songAuthor: "Nirvana",
+                                              songImage: Image(.nirvanaCover),
+                                              songLenght: 342,
+                                              isDolbyAtmos: true)
+}

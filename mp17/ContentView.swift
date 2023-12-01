@@ -11,16 +11,12 @@ struct ContentView: View {
     let miniPlayerHeight: CGFloat = 56.0
 
     @State private var volume: Double = 0.3
-    @State private var song: Song? = Song(songTitle: "Nevermind",
-                                          songAuthor: "Nirvana",
-                                          songImage: Image(.nirvanaCover),
-                                          songLenght: 342,
-                                          isDolbyAtmos: true)
+    @State private var song: Song? = MockData.NirvanaNevermind
 
     var body: some View {
-        GeometryReader { geo in
-            let screenSize = geo.size
-            let screenSafeArea = geo.safeAreaInsets
+        GeometryReader {
+            let screenSize = $0.size
+            let screenSafeArea = $0.safeAreaInsets
             let bottomOffset = UITabBarController().height + screenSafeArea.bottom
 
             ZStack(alignment: Alignment(horizontal: .center, vertical: .bottom)) {
